@@ -39,6 +39,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE articles SET deleted_at = current_timestamp() WHERE id = ?")
 @Where(clause = "deleted_at IS NULL")
+@Table(name = "articles")
 public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,10 +68,9 @@ public class Article {
     private int favoriteCount = 0;
 
     // current_timestamp() is default value
-    @CreatedDate
     @NotNull()
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @LastModifiedDate
     @Column(name = "updated_at")

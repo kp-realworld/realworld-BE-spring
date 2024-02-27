@@ -19,6 +19,7 @@ public class AddArticleRequest {
                 .title(title)
                 .description(description)
                 .body(body)
+                .userId(50L)
                 .build();
     }
 }
