@@ -86,5 +86,16 @@ public class Article {
         this.description = description;
         this.body = body;
     }
+
+    public void update(String title, String description, String body) {
+        this.title = title;
+        this.description = description;
+        this.body = body;
+
+        // print
+        System.out.println("title : " + title);
+        System.out.println("description : " + description);
+        System.out.println("body : " + body);
+    }
 }
 

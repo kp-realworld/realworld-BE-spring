@@ -27,5 +27,6 @@ public class ArticleResponse {
         this.favoritesCount = article.getFavoriteCount();
         this.createdAt = article.getCreatedAt();
         this.updatedAt = article.getUpdatedAt();
+
     }
 }
