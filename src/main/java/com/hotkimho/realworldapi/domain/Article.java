@@ -52,24 +52,24 @@ public class Article {
     private Long userId;
 
     @NotNull()
-    @Column(name = "title", updatable = false)
+    @Column(name = "title")
     private String title;
 
     @NotNull()
-    @Column(name = "description", updatable = false)
+    @Column(name = "description")
     private String description;
 
     @NotNull()
-    @Column(name = "body", updatable = false)
+    @Column(name = "body")
     private String body;
 
     // set default value to 0
-    @Column(name = "favorite_count", updatable = false)
+    @Column(name = "favorite_count")
     private int favoriteCount = 0;
 
     // current_timestamp() is default value
     @NotNull()
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @LastModifiedDate

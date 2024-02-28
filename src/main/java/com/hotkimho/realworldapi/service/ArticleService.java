@@ -5,9 +5,9 @@ import com.hotkimho.realworldapi.domain.Article;
 import com.hotkimho.realworldapi.dto.article.AddArticleRequest;
 import com.hotkimho.realworldapi.dto.article.UpdateArticleRequest;
 import com.hotkimho.realworldapi.repository.ArticleRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -31,12 +31,15 @@ public class ArticleService {
     }
 
 
+
     @Transactional
     public Article update(
             Long author_id,
             Long article_id,
             UpdateArticleRequest request)
     {
+        System.out.println("author_id" + author_id);
+        System.out.println("article_id" + article_id);
         Article article = articleRepository.findById(article_id)
                 .orElseThrow(() -> new IllegalArgumentException("not found article id: " + article_id));
         // print before update
@@ -45,6 +48,7 @@ public class ArticleService {
         System.out.println("before body" + article.getBody());
 
         article.update(request.getTitle(), request.getDescription(), request.getBody());
+     //   articleRepository.flush();
         // todo update tag
         // print after update
         System.out.println("after title" + article.getTitle());

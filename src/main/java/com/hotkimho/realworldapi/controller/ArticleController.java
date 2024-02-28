@@ -45,6 +45,7 @@ public class ArticleController {
             @RequestBody UpdateArticleRequest request
     ) {
         Article updatedArticle = articleService.update(author_id, article_id, request);
+        System.out.println("잘 끝나써");
         return ResponseEntity.ok()
                 .body(new ArticleResponse(updatedArticle));
     }
