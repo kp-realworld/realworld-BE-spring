@@ -82,7 +82,7 @@ public class User implements UserDetails {
     }
 
     @Override
-    public String getEmail() {
+    public String getUsername() {
         return email;
     }
 
@@ -92,9 +92,27 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNotExpired() {
+    public boolean isAccountNonExpired() {
         // 만료 확인
         return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        // 계정 잠금 확인
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        // 자격 증명 만료 확인
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        // 사용 가능한 계정 확인
+        return deletedAt == null;
     }
 
 }
