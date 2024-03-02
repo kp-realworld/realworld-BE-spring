@@ -67,9 +67,7 @@ public class Article {
     @Column(name = "favorite_count")
     private int favoriteCount = 0;
 
-    // current_timestamp() is default value
-    @NotNull()
-    @Column(name = "created_at")
+    @Column(name = "created_at" , updatable = false, nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @LastModifiedDate
@@ -88,7 +86,9 @@ public class Article {
     }
 
     public void update(String title, String description, String body) {
+        System.out.println("안에서 시작");
         this.title = title;
+        System.out.println("안에서 끄읕");
         this.description = description;
         this.body = body;
 

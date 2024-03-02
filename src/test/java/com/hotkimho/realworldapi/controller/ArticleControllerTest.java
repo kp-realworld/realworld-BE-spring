@@ -115,7 +115,7 @@ class ArticleControllerTest {
                 .userId(50L)
                 .build());
 
-        AddArticleRequest updateRequest = new AddArticleRequest("수정된 제목", "수정된 설명", "수정된 내용", new String[]{"수정된 태그1", "수정된 태그2"});
+        AddArticleRequest updateRequest = new AddArticleRequest("수정된 제목22", "수정된 설명", "수정된 내용", new String[]{"수정된 태그1", "수정된 태그2"});
 
         final String requestBody = objectMapper.writeValueAsString(updateRequest);
 
@@ -130,5 +130,27 @@ class ArticleControllerTest {
                 .andExpect(jsonPath("$.title").value(updateRequest.getTitle()))
                 .andExpect(jsonPath("$.description").value(updateRequest.getDescription()))
                 .andExpect(jsonPath("$.body").value(updateRequest.getBody()));
+    }
+
+    @DisplayName("deleteArticle: 게시글 삭제")
+    @Test
+    public void deleteArticle() throws Exception {
+        // given
+        final String url = "/user/{author_id}/article/{article_id}";
+        final AddArticleRequest request = new AddArticleRequest("제목", "설명", "내용", new String[]{"태그1", "태그2"});
+
+        Article savedArticle = articleRepository.save(Article.builder()
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .body(request.getBody())
+                .userId(50L)
+                .build());
+
+        // when
+        final ResultActions resultActions = mockMvc.perform(delete(url, savedArticle.getUserId(), savedArticle.getId()));
+
+        // then
+        resultActions
+                .andExpect(status().isNoContent());
     }
 }

@@ -40,14 +40,16 @@ public class ArticleService {
     {
         System.out.println("author_id" + author_id);
         System.out.println("article_id" + article_id);
-        Article article = articleRepository.findById(article_id)
+        Article article = articleRepository.findByUserIdAndId(author_id,article_id)
                 .orElseThrow(() -> new IllegalArgumentException("not found article id: " + article_id));
         // print before update
         System.out.println("before title" + article.getTitle());
         System.out.println("before description" + article.getDescription());
         System.out.println("before body" + article.getBody());
 
+        System.out.println("시자악");
         article.update(request.getTitle(), request.getDescription(), request.getBody());
+        System.out.println("끄읕");
      //   articleRepository.flush();
         // todo update tag
         // print after update
@@ -55,5 +57,11 @@ public class ArticleService {
         System.out.println("after description" + article.getDescription());
         System.out.println("after body" + article.getBody());
         return article;
+    }
+
+    public void delete(Long author_id, Long article_id) {
+        System.out.println("author_id" + author_id);
+        System.out.println("article_id" + article_id);
+        articleRepository.deleteByUserIdAndId(author_id, article_id);
     }
 }
