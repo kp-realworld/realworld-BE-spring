@@ -7,9 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -35,7 +33,7 @@ CREATE TABLE `users` (
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class User implements UserDetails {
+public class User  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -74,45 +72,6 @@ public class User implements UserDetails {
         this.password = password;
         this.bio = bio;
         this.profileImage = profileImage;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("user"));
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        // 만료 확인
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        // 계정 잠금 확인
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        // 자격 증명 만료 확인
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        // 사용 가능한 계정 확인
-        return deletedAt == null;
     }
 
 }
