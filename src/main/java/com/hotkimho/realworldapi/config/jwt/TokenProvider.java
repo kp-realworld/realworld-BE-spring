@@ -1,15 +1,21 @@
 package com.hotkimho.realworldapi.config.jwt;
 
+import com.hotkimho.realworldapi.domain.User;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
+import org.springframework.security.core.Authentication;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 
 @Service
 public class TokenProvider {
@@ -21,19 +27,19 @@ public class TokenProvider {
         this.jwtProperties = jwtProperties;
     }
 
-    public String generateToken(Long userID, Duration expiredAt) {
+    public String generateToken(User user, Duration expiredAt) {
         Date now  = new Date();
-        return "";
+        return makeToken(user, new Date(now.getTime() + expiredAt.toMillis()));
     }
 
-    private String makeToken(Long userID, Date expiredAt) {
+    private String makeToken(User user, Date expiredAt) {
         Date now = new Date();
         return Jwts.builder()
-                .setHeader(Header.TYPE, Header.JWT_TYPE)
+                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
                 .setIssuer(jwtProperties.getIssuer())
                 .setIssuedAt(now)
                 .setExpiration(expiredAt)
-                .claim("userId", userID)
+                .claim("userId", user.getUserId())
                 .signWith(SignatureAlgorithm.HS256, jwtProperties.getSecret())
                 .compact();
     }
@@ -51,7 +57,21 @@ public class TokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailService.loadUserByUsername(getUserId(token).toString());
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        Claims claims = getClaims(token);
+        Set<SimpleGrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
+
+        return new UsernamePasswordAuthenticationToken(new org.springframework.security.core.userdetails.User(claims.getSubject
+                (), "", authorities), token, authorities);
+    }
+    public Long getUserId(String token) {
+        Claims claims = getClaims(token);
+        return claims.get("userId", Long.class);
+    }
+
+    private Claims getClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(jwtProperties.getSecret())
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
