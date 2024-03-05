@@ -1,7 +1,7 @@
 package com.hotkimho.realworldapi.service;
 
 import com.hotkimho.realworldapi.domain.User;
-import com.hotkimho.realworldapi.dto.user.AddUserRequest;
+import com.hotkimho.realworldapi.dto.auth.AddUserRequest;
 import com.hotkimho.realworldapi.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,13 +18,14 @@ public class UserService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    public Long save(AddUserRequest requestDto) {
+    public User save(AddUserRequest requestDto) {
         return userRepository.save(User.builder()
                 .email(requestDto.getEmail())
                 .username(requestDto.getUsername())
                 .bio(requestDto.getBio())
+                .profileImage(requestDto.getProfileImage())
                 .password(bCryptPasswordEncoder.encode(requestDto.getPassword()))
-                .build()).getUserId();
+                .build());
     }
 
     public User findById(Long id) {

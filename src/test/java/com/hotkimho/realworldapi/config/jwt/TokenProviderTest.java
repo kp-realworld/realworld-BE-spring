@@ -72,7 +72,7 @@ public class TokenProviderTest {
     void validToken_validToken() {
         // given
         String token = JwtFactory.withDefaultValues().createToken(jwtProperties);
-
+        
         // when
         boolean result = tokenProvider.validateToken(token);
 

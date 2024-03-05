@@ -7,33 +7,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-/*
-
-CREATE TABLE `users` (
-  `user_id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `username` varchar(64) NOT NULL,
-  `email` varchar(64) NOT NULL,
-  `password` varchar(128) NOT NULL,
-  `bio` varchar(128) DEFAULT NULL,
-  `profile_image` varchar(128) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT NULL,
-  `deleted_at` datetime(3) DEFAULT NULL,
-  PRIMARY KEY (`user_id`),
-  KEY `idx_users_deleted_at` (`deleted_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
- */
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class User  {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -74,4 +61,38 @@ public class User  {
         this.profileImage = profileImage;
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("user"));
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

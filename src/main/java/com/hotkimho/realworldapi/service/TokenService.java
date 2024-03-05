@@ -23,6 +23,7 @@ public class TokenService {
 
     public String createAccessToken(String refreshToken) {
         if (!tokenProvider.validateToken(refreshToken)) {
+            System.out.println("refreshToken(3): " + refreshToken);
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
 
@@ -30,5 +31,13 @@ public class TokenService {
         User user = userService.findById(userId);
 
         return tokenProvider.generateToken(user, Duration.ofHours(jwtProperties.getAccessExp()));
+    }
+
+    public String createNewAccessToken(User user) {
+        return tokenProvider.generateToken(user, Duration.ofHours(jwtProperties.getAccessExp()));
+    }
+
+    public String createRefreshToken(User user) {
+        return tokenProvider.generateToken(user, Duration.ofDays(jwtProperties.getRefreshExp()));
     }
 }
