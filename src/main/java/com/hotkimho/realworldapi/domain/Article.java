@@ -40,7 +40,7 @@ import java.time.LocalDateTime;
 @SQLDelete(sql = "UPDATE articles SET deleted_at = current_timestamp() WHERE id = ?")
 @Where(clause = "deleted_at IS NULL")
 @Table(name = "articles")
-public class Article {
+public class  Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @NotNull()
@@ -86,16 +86,14 @@ public class Article {
     }
 
     public void update(String title, String description, String body) {
-        System.out.println("안에서 시작");
         this.title = title;
-        System.out.println("안에서 끄읕");
         this.description = description;
         this.body = body;
 
-        // print
-        System.out.println("title : " + title);
-        System.out.println("description : " + description);
-        System.out.println("body : " + body);
     }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    private User user;
 }
 
