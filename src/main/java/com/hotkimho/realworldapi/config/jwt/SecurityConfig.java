@@ -44,8 +44,10 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 관리 정책: 상태 없음
                 .and()
                 .authorizeRequests()
-                .requestMatchers("/user/signup", "/user/signin","token-refresh").permitAll() // 인증 없이 접근 허용 경로
-                .anyRequest().authenticated() // 나머지 요청은 인증 필요
+//                .requestMatchers("/user/signup", "/user/signin","/token-refresh", "/heartbeat").permitAll() // 인증 없이 접근 허용 경로
+                .requestMatchers("/**").permitAll() // 인증 없이 접근 허용 경로
+                .requestMatchers("/swagger-ui/**").permitAll() // 인증 없이 접근 허용 경로
+//                .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 .and()
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 인증 필터 추가
 

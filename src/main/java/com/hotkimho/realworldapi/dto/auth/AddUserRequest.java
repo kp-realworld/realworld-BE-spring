@@ -17,6 +17,7 @@ public class AddUserRequest {
 
     @NotBlank(message = "password is required")
     private String password;
+
     private String bio;
 
     private String profileImage= "https://static.productionready.io/images/smiley-cyrus.jpg";
