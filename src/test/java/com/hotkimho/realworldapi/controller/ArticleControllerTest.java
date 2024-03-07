@@ -2,6 +2,7 @@ package com.hotkimho.realworldapi.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hotkimho.realworldapi.domain.Article;
+import com.hotkimho.realworldapi.domain.User;
 import com.hotkimho.realworldapi.dto.article.AddArticleRequest;
 import com.hotkimho.realworldapi.repository.ArticleRepository;
 import org.assertj.core.api.Assertions;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.ResultActions;
@@ -21,6 +23,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,7 +55,12 @@ class ArticleControllerTest {
     public void addArticle() throws Exception {
         // given
         final String url = "/article";
-        final AddArticleRequest request = new AddArticleRequest("제목", "설명", "내용", new String[]{"태그1", "태그2"});
+        final AddArticleRequest request = new AddArticleRequest(
+                "제목",
+                "설명",
+                "내용",
+                new String[]{"태그1", "태그2"},
+                new User(72L));
 
 
         final String requestBody = objectMapper.writeValueAsString(request);
@@ -61,7 +69,8 @@ class ArticleControllerTest {
         // when
         ResultActions result = mockMvc.perform(post(url)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(requestBody));
+                .content(requestBody))
+                .andDo(print());
 
         // then
         result.andExpect(status().isCreated());
@@ -80,18 +89,17 @@ class ArticleControllerTest {
     public void getArticle() throws Exception {
         // given
         final String url = "/user/{author_id}/article/{article_id}";
-        final AddArticleRequest request = new AddArticleRequest("제목", "설명", "내용", new String[]{"태그1", "태그2"});
+        final AddArticleRequest request = new AddArticleRequest("제목", "설명", "내용", new String[]{"태그1", "태그2"}, new User(50L));
 
         Article savedArticle = articleRepository.save(Article.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .body(request.getBody())
-                .userId(50L)
                 .build());
 
         System.out.println("saved id : "+ savedArticle.getId());
         // when
-        final ResultActions resultActions = mockMvc.perform(get(url, savedArticle.getUserId(), savedArticle.getId()));
+        final ResultActions resultActions = mockMvc.perform(get(url, savedArticle.getUser().getUserId(), savedArticle.getId()));
 
         // then
         resultActions
@@ -106,21 +114,20 @@ class ArticleControllerTest {
     public void updateArticle() throws Exception {
         // given
         final String url = "/user/{author_id}/article/{article_id}";
-        final AddArticleRequest request = new AddArticleRequest("제목", "설명", "내용", new String[]{"태그1", "태그2"});
+        final AddArticleRequest request = new AddArticleRequest("제목", "설명", "내용", new String[]{"태그1", "태그2"}, new User(50L));
 
         Article savedArticle = articleRepository.save(Article.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .body(request.getBody())
-                .userId(50L)
                 .build());
 
-        AddArticleRequest updateRequest = new AddArticleRequest("수정된 제목22", "수정된 설명", "수정된 내용", new String[]{"수정된 태그1", "수정된 태그2"});
+        AddArticleRequest updateRequest = new AddArticleRequest("수정된 제목22", "수정된 설명", "수정된 내용", new String[]{"수정된 태그1", "수정된 태그2"}, new User(50L));
 
         final String requestBody = objectMapper.writeValueAsString(updateRequest);
 
         // when
-        final ResultActions resultActions = mockMvc.perform(put(url, savedArticle.getUserId(), savedArticle.getId())
+        final ResultActions resultActions = mockMvc.perform(put(url, savedArticle.getUser().getUserId(), savedArticle.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(requestBody));
 
@@ -137,17 +144,16 @@ class ArticleControllerTest {
     public void deleteArticle() throws Exception {
         // given
         final String url = "/user/{author_id}/article/{article_id}";
-        final AddArticleRequest request = new AddArticleRequest("제목", "설명", "내용", new String[]{"태그1", "태그2"});
+        final AddArticleRequest request = new AddArticleRequest("제목", "설명", "내용", new String[]{"태그1", "태그2"}, new User(50L));
 
         Article savedArticle = articleRepository.save(Article.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .body(request.getBody())
-                .userId(50L)
                 .build());
 
         // when
-        final ResultActions resultActions = mockMvc.perform(delete(url, savedArticle.getUserId(), savedArticle.getId()));
+        final ResultActions resultActions = mockMvc.perform(delete(url, savedArticle.getUser().getUserId(), savedArticle.getId()));
 
         // then
         resultActions

@@ -45,14 +45,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String getAccessToken(String authorizationHeader) {
-        System.out.println("1");
         if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
             return null;
         }
 
-        System.out.println("2");
         String token = authorizationHeader.substring(BEARER_PREFIX.length());
-        System.out.println("token : " + token);
         return token;
     }
 }

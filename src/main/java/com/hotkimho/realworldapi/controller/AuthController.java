@@ -21,6 +21,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 public class AuthController {
 
@@ -65,25 +67,15 @@ public class AuthController {
                         signinRequest.getPassword()
                 )
         );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        Object principal = authentication.getPrincipal();
-
-        if (principal instanceof User) {
-
-            User user = (User) principal;
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new SigninResponse(
-                            tokenService.createNewAccessToken(user),
-                            tokenService.createRefreshToken(user),
-                            user.getUserId(),
-                            user.getUsername(),
-                            user.getEmail()
-                            ));
-        }
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
+        User user = userService.findByEmail(signinRequest.getEmail());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new SigninResponse(
+                        tokenService.createNewAccessToken(user),
+                        tokenService.createRefreshToken(user),
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getEmail()
+            ));
     }
     @GetMapping("/token-refresh")
     public ResponseEntity<CreateAccessTokenResponse> refreshAccessToken(
@@ -101,7 +93,8 @@ public class AuthController {
 
     @GetMapping("/heartbeat")
     public String heartbeat() {
-
+        Optional<Long> currentUserId = AuthUtil.getCurrentUserId();
+        System.out.println("currentUserId : " + currentUserId);
         return "I'm alive!";
     }
 }

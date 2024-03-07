@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,13 +28,15 @@ public class SecurityConfig {
     private final TokenProvider tokenProvider;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-//    @Autowired
-//    public SecurityConfig(CustomUserDetailService customUserDetailService) {
-//        this.customUserDetailService = customUserDetailService;
-//    }
-    // 특정 HTTP 요청에 대한 웹 기반 보안 구성
+    private final String[] ExceptionAPIS = {
+            "/user/signup",
+            "/user/signin",
+            "/token-refresh"
+    };
 
-
+    private final String[] ExceptionGetAPIS = {
+            "/user/{author_id}/article/{article_id}",
+    };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -44,10 +47,11 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 관리 정책: 상태 없음
                 .and()
                 .authorizeRequests()
-//                .requestMatchers("/user/signup", "/user/signin","/token-refresh", "/heartbeat").permitAll() // 인증 없이 접근 허용 경로
-                .requestMatchers("/**").permitAll() // 인증 없이 접근 허용 경로
+                .requestMatchers("/user/signup", "/user/signin","/token-refresh").permitAll() // 인증 없이 접근 허용 경로
+//                .requestMatchers("/**").permitAll() // 인증 없이 접근 허용 경로
                 .requestMatchers("/swagger-ui/**").permitAll() // 인증 없이 접근 허용 경로
-//                .anyRequest().authenticated() // 나머지 요청은 인증 필요
+                .requestMatchers(HttpMethod.GET, ExceptionGetAPIS).permitAll() // 인증 없이 접근 허용 경로
+                .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 .and()
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 인증 필터 추가
 
