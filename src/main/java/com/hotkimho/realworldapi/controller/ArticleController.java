@@ -53,23 +53,28 @@ public class ArticleController {
                 .body(articledto);
     }
 
-    @PutMapping("/user/{author_id}/article/{article_id}")
-    public ResponseEntity<ArticleResponse> updateArticle(
-            @PathVariable("author_id") Long author_id,
+    @PutMapping("/article/{article_id}")
+    public ResponseEntity<ArticleDto> updateArticle(
             @PathVariable("article_id") Long article_id,
             @RequestBody UpdateArticleRequest request
     ) {
-        Article updatedArticle = articleService.update(author_id, article_id, request);
+        Long author_id = AuthUtil.getCurrentUserId()
+                .orElseThrow(() -> new DefaultErrorException(HttpStatus.UNAUTHORIZED, "유효하지 않은 인증 정보입니다."));
+
+        ArticleDto updatedArticle = articleService.update(author_id, article_id, request);
 
         return ResponseEntity.ok()
-                .body(new ArticleResponse(updatedArticle));
+                .body(updatedArticle);
     }
 
-    @DeleteMapping("/user/{author_id}/article/{article_id}")
+    @DeleteMapping("/article/{article_id}")
     public ResponseEntity<Void> deleteArticle(
-            @PathVariable("author_id") Long author_id,
             @PathVariable("article_id") Long article_id
     ) {
+        Long author_id = AuthUtil.getCurrentUserId()
+                .orElseThrow(() -> new DefaultErrorException(HttpStatus.UNAUTHORIZED, "유효하지 않은 인증 정보입니다."));
+
+
         articleService.delete(author_id, article_id);
         return ResponseEntity.noContent().build();
     }

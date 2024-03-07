@@ -86,6 +86,12 @@ public class Article {
 
     }
 
+    @PreUpdate
+    @PrePersist
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private User user;

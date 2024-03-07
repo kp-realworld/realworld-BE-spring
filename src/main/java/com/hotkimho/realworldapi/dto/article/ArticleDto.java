@@ -17,6 +17,8 @@ public class ArticleDto {
 
         private Long articleId;
         private UserDto Author;
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+
         private List<String> tagList;
 
         private String title;

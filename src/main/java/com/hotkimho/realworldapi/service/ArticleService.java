@@ -68,34 +68,49 @@ public class ArticleService {
     }
 
     @Transactional
-    public Article update(
+    public ArticleDto update(
             Long author_id,
             Long article_id,
             UpdateArticleRequest request)
     {
 
+        // article 소유 확인
+        if (!articleRepository.existsByIdAndUserUserId(article_id, author_id)) {
+            throw new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + article_id);
+        }
+
+        // read user
         User user = userRepository.findById(author_id)
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found user id: " + author_id));
 
 
+        // read article
         Article article = articleRepository.findByUserUserIdAndId(author_id,article_id)
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + article_id));
 
-
+        // update article
         article.update(request.getTitle(), request.getDescription(), request.getBody());
 
+        // delete article tag
+        articleTagRepository.deleteByArticleId(article_id);
 
+        // add article tag
+        List<ArticleTag> articleTags = request.toArticleTagsEntity(article);
+        List<ArticleTag> savedArticleTags =  articleTagRepository.saveAll(articleTags);
 
-        // todo update tag
+        // set user and tag
+        article.setArticleTags(savedArticleTags);
+        article.setUser(user);
 
-        return article;
+        return new ArticleDto(article);
     }
 
     public void delete(Long author_id, Long article_id) {
-        System.out.println("author_id" + author_id);
-        System.out.println("article_id" + article_id);
+        // article 소유 확인
+        if (!articleRepository.existsByIdAndUserUserId(article_id, author_id)) {
+            throw new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + article_id);
+        }
+
         articleRepository.deleteByUserUserIdAndId(author_id, article_id);
     }
-
-
 }
