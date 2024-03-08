@@ -1,16 +1,12 @@
 package com.hotkimho.realworldapi.service;
 
 
-import com.hotkimho.realworldapi.domain.Article;
-import com.hotkimho.realworldapi.domain.ArticleTag;
-import com.hotkimho.realworldapi.domain.User;
+import com.hotkimho.realworldapi.domain.*;
 import com.hotkimho.realworldapi.dto.article.AddArticleRequest;
 import com.hotkimho.realworldapi.dto.article.ArticleDto;
 import com.hotkimho.realworldapi.dto.article.UpdateArticleRequest;
 import com.hotkimho.realworldapi.exception.DefaultErrorException;
-import com.hotkimho.realworldapi.repository.ArticleRepository;
-import com.hotkimho.realworldapi.repository.ArticleTagRepository;
-import com.hotkimho.realworldapi.repository.UserRepository;
+import com.hotkimho.realworldapi.repository.*;
 import jakarta.transaction.Transactional;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,15 +24,21 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final UserRepository userRepository;
     private final ArticleTagRepository articleTagRepository;
+    private final ArticleLikeRepository articleLikeRepository;
+    private final ArticleLikeCountRepository articleLikeCountRepository;
     @Autowired
     public ArticleService(
             ArticleRepository articleRepository,
             UserRepository userRepository,
-            ArticleTagRepository articleTagRepository
+            ArticleTagRepository articleTagRepository,
+            ArticleLikeRepository articleLikeRepository,
+            ArticleLikeCountRepository articleLikeCountRepository
             ) {
         this.articleRepository = articleRepository;
         this.userRepository = userRepository;
         this.articleTagRepository = articleTagRepository;
+        this.articleLikeRepository = articleLikeRepository;
+        this.articleLikeCountRepository = articleLikeCountRepository;
     }
 
     @Transactional
@@ -60,10 +62,18 @@ public class ArticleService {
         return new ArticleDto(savedArticle);
     }
 
-    public ArticleDto findByUserIdAndId(Long authorId, Long id) {
-        Article article =  articleRepository.findByIdWithUser(id)
-                .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + id));
+    @Transactional
+    public ArticleDto findByUserIdAndId(Long authorId, Long articleId) {
+        // article 소유 확인
+        if (!articleRepository.existsByIdAndUserUserId(articleId, authorId)) {
+            throw new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + articleId);
+        }
 
+        // read article
+        Article article =  articleRepository.findByIdWithUser(articleId)
+                .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + articleId));
+
+        // set data
         return new ArticleDto(article);
     }
 
@@ -83,7 +93,6 @@ public class ArticleService {
         User user = userRepository.findById(author_id)
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found user id: " + author_id));
 
-
         // read article
         Article article = articleRepository.findByUserUserIdAndId(author_id,article_id)
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + article_id));
@@ -98,7 +107,8 @@ public class ArticleService {
         List<ArticleTag> articleTags = request.toArticleTagsEntity(article);
         List<ArticleTag> savedArticleTags =  articleTagRepository.saveAll(articleTags);
 
-        // set user and tag
+
+        // set data
         article.setArticleTags(savedArticleTags);
         article.setUser(user);
 

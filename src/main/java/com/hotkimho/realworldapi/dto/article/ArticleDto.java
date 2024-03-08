@@ -1,6 +1,7 @@
 package com.hotkimho.realworldapi.dto.article;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hotkimho.realworldapi.domain.Article;
 import com.hotkimho.realworldapi.domain.ArticleTag;
 import com.hotkimho.realworldapi.dto.user.UserDto;
@@ -25,6 +26,9 @@ public class ArticleDto {
         private String description;
         private String body;
         private int favoriteCount;
+
+        @JsonProperty("is_favorited")
+        private boolean favorited;
         private LocalDateTime createdAt;
 
         @JsonInclude(JsonInclude.Include.NON_NULL)

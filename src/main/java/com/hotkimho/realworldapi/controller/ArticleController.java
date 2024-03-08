@@ -7,7 +7,9 @@ import com.hotkimho.realworldapi.dto.article.AddArticleRequest;
 import com.hotkimho.realworldapi.dto.article.ArticleDto;
 import com.hotkimho.realworldapi.dto.article.ArticleResponse;
 import com.hotkimho.realworldapi.dto.article.UpdateArticleRequest;
+import com.hotkimho.realworldapi.dto.articlelike.ArticleLikeInfo;
 import com.hotkimho.realworldapi.exception.DefaultErrorException;
+import com.hotkimho.realworldapi.service.ArticleLikeService;
 import com.hotkimho.realworldapi.service.ArticleService;
 
 import com.hotkimho.realworldapi.util.AuthUtil;
@@ -23,10 +25,11 @@ import java.util.Optional;
 public class ArticleController {
 
     private final ArticleService articleService;
-
+    private final ArticleLikeService articleLikeService;
     @Autowired()
-    public ArticleController(ArticleService articleService) {
+    public ArticleController(ArticleService articleService, ArticleLikeService articleLikeService) {
         this.articleService = articleService;
+        this.articleLikeService = articleLikeService;
     }
 
     @PostMapping("/article")
@@ -36,7 +39,6 @@ public class ArticleController {
         System.out.println("tags " + request.getTagList());
 
         request.setAuthor(new User(currentUserId));
-
         ArticleDto savedArticle = articleService.save(request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -48,9 +50,17 @@ public class ArticleController {
             @PathVariable("author_id") Long author_id,
             @PathVariable("article_id") Long article_id
     ) {
-        ArticleDto articledto = articleService.findByUserIdAndId(author_id, article_id);
+        Long currentUserId = AuthUtil.getCurrentUserId()
+                .orElse(0L);
+
+        ArticleDto articleDto = articleService.findByUserIdAndId(author_id, article_id);
+
+        ArticleLikeInfo likeInfo = articleLikeService.getArticleLikeInfo(currentUserId, article_id);
+        articleDto.setFavorited(likeInfo.isFavorited());
+        articleDto.setFavoriteCount(likeInfo.getLikeCount());
+
         return ResponseEntity.ok()
-                .body(articledto);
+                .body(articleDto);
     }
 
     @PutMapping("/article/{article_id}")
@@ -58,10 +68,14 @@ public class ArticleController {
             @PathVariable("article_id") Long article_id,
             @RequestBody UpdateArticleRequest request
     ) {
-        Long author_id = AuthUtil.getCurrentUserId()
+        Long currentUserId = AuthUtil.getCurrentUserId()
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.UNAUTHORIZED, "유효하지 않은 인증 정보입니다."));
 
-        ArticleDto updatedArticle = articleService.update(author_id, article_id, request);
+        ArticleDto updatedArticle = articleService.update(currentUserId, article_id, request);
+
+        ArticleLikeInfo likeInfo = articleLikeService.getArticleLikeInfo(currentUserId, article_id);
+        updatedArticle.setFavorited(likeInfo.isFavorited());
+        updatedArticle.setFavoriteCount(likeInfo.getLikeCount());
 
         return ResponseEntity.ok()
                 .body(updatedArticle);
