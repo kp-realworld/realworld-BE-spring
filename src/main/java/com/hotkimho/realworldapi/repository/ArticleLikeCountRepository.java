@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface ArticleLikeCountRepository extends JpaRepository<ArticleLikeCount, Long> {
     @Modifying
     @Transactional
@@ -20,6 +22,6 @@ public interface ArticleLikeCountRepository extends JpaRepository<ArticleLikeCou
     int incrementCountByArticleId(@Param("articleId") Long articleId);
 
 
-    // read  ㅁ
+    List<ArticleLikeCount> findByArticleIdIn(List<Long> articleIds);
 
 }

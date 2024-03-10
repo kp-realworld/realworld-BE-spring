@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ArticleLikeService {
 
@@ -91,4 +93,14 @@ public class ArticleLikeService {
 
         articleLikeCountRepository.decrementCountByArticleId(articleId);
     }
+
+    public List<ArticleLike> findByUserIdAndArticleIdIn(Long userId, List<Long> articleIds) {
+        return articleLikeRepository.findByUserIdAndArticleIdIn(userId, articleIds);
+    }
+
+    public List<ArticleLikeCount> findByArticleIdIn(List<Long> articleIds) {
+        return articleLikeCountRepository.findByArticleIdIn(articleIds);
+    }
+
+
 }

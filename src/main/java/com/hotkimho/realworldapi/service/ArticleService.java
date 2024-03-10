@@ -4,17 +4,23 @@ package com.hotkimho.realworldapi.service;
 import com.hotkimho.realworldapi.domain.*;
 import com.hotkimho.realworldapi.dto.article.AddArticleRequest;
 import com.hotkimho.realworldapi.dto.article.ArticleDto;
+import com.hotkimho.realworldapi.dto.article.ArticleListDto;
 import com.hotkimho.realworldapi.dto.article.UpdateArticleRequest;
 import com.hotkimho.realworldapi.exception.DefaultErrorException;
 import com.hotkimho.realworldapi.repository.*;
 import jakarta.transaction.Transactional;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.ErrorResponseException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -122,5 +128,31 @@ public class ArticleService {
         }
 
         articleRepository.deleteByUserUserIdAndId(author_id, article_id);
+    }
+
+    public List<Article> getArticles(int limit, int offset) {
+        Pageable pageable = PageRequest.of(offset, limit, Sort.by("id").descending());
+        Page<Article> articlePage = articleRepository.findAll(pageable);
+
+        return articlePage.stream()
+                .toList();
+    }
+
+    public List<ArticleTag> getArticlesByTag(int limit, int offset, String tag) {
+        Pageable pageable = PageRequest.of(offset, limit, Sort.by("id").descending());
+        Page<ArticleTag> articlePage = articleTagRepository.findByTagWithPagination(tag, pageable);
+
+        return articlePage.stream()
+                .toList();
+    }
+
+    public List<Article> getArticlesByIds(List<Long> articleIds) {
+        return articleRepository.findAllById(articleIds);
+    }
+
+    public List<Article> getArticlesByUserId(int limit, int offset, Long userId) {
+        return articleRepository.findByUserIdWithPagination(userId, PageRequest.of(offset, limit, Sort.by("id").descending()))
+                .stream()
+                .toList();
     }
 }

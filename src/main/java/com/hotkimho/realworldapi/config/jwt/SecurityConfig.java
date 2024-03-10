@@ -36,6 +36,8 @@ public class SecurityConfig {
 
     private final String[] ExceptionGetAPIS = {
             "/user/{author_id}/article/{article_id}",
+            "/articles",
+            "/articles/tag",
     };
 
     @Bean
