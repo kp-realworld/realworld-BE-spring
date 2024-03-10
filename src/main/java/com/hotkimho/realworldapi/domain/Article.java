@@ -21,21 +21,19 @@ CREATE TABLE `articles` (
 
 import jakarta.persistence.*;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SoftDelete;
 import org.hibernate.annotations.Where;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE articles SET deleted_at = current_timestamp() WHERE id = ?")
 @Where(clause = "deleted_at IS NULL")
@@ -46,10 +44,6 @@ public class Article {
     @NotNull()
     @Column(name = "id", updatable = false, nullable = false)
     private Long id;
-
-    @NotNull()
-    @Column(name = "user_id", updatable = false)
-    private Long userId;
 
     @NotNull()
     @Column(name = "title")
@@ -78,24 +72,31 @@ public class Article {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Article(Long userId, String title, String description, String body) {
-        this.userId = userId;
+    public Article(String title, String description, String body, User user) {
         this.title = title;
         this.description = description;
         this.body = body;
+        this.user = user;
     }
 
     public void update(String title, String description, String body) {
-        System.out.println("안에서 시작");
         this.title = title;
-        System.out.println("안에서 끄읕");
         this.description = description;
         this.body = body;
 
-        // print
-        System.out.println("title : " + title);
-        System.out.println("description : " + description);
-        System.out.println("body : " + body);
     }
+
+    @PreUpdate
+    @PrePersist
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    private User user;
+
+    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ArticleTag> articleTags;
 }
 

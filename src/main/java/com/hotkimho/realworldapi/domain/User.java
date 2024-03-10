@@ -61,6 +61,10 @@ public class User implements UserDetails {
         this.profileImage = profileImage;
     }
 
+    public User(Long UserId) {
+        this.userId = UserId;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("user"));
@@ -74,6 +78,10 @@ public class User implements UserDetails {
     @Override
     public String getPassword() {
         return password;
+    }
+
+    public Long getUserId() {
+        return userId;
     }
 
     @Override

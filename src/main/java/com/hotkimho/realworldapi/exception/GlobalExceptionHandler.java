@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.LinkedHashMap;
@@ -25,5 +26,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         System.out.println("code2 : "+ex.getCode().value());
         System.out.println("message 2: "+ ex.getMessage());
         return new ResponseEntity<>(body, ex.getCode());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request) {
+        // 예상치 못한 예외 처리
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("error", Map.of(
+                "code", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "message", ex.getMessage()
+        ));
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
