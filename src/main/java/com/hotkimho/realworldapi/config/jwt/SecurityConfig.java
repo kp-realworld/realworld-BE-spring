@@ -38,6 +38,7 @@ public class SecurityConfig {
             "/user/{author_id}/article/{article_id}",
             "/articles",
             "/articles/tag",
+            "/user/{author_id}/article/{article_id}/comments",
     };
 
     @Bean

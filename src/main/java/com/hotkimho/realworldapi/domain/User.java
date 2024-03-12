@@ -65,6 +65,12 @@ public class User implements UserDetails {
         this.userId = UserId;
     }
 
+    @PreUpdate
+    @PrePersist
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("user"));
