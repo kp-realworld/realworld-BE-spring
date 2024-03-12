@@ -32,7 +32,7 @@ public class FollowController {
         return ResponseEntity.ok(userDto);
     }
 
-    @DeleteMapping("/user/follow/{followee_id}")
+    @DeleteMapping("/user/follow/{followed_id}")
     public ResponseEntity<Void> unfollowUser(
             @PathVariable("followed_id") Long followedId) {
         Long currentUserId = AuthUtil.getCurrentUserId()
