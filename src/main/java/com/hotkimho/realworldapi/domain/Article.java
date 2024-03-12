@@ -79,11 +79,14 @@ public class Article {
         this.user = user;
     }
 
+    public Article(Long articleId) {
+        this.id = articleId;
+    }
+
     public void update(String title, String description, String body) {
         this.title = title;
         this.description = description;
         this.body = body;
-
     }
 
     @PreUpdate

@@ -57,15 +57,16 @@ public class ArticleService {
         // set author
         request.setAuthor(author);
 
-        // save article
-        Article savedArticle = articleRepository.save(request.toEntity());
-
-        // save article tag
-        List<ArticleTag> articleTags = request.toArticleTagsEntity(savedArticle);
-        List<ArticleTag> savedArticleTags =  articleTagRepository.saveAll(articleTags);
-        savedArticle.setArticleTags(savedArticleTags);
-
-        return new ArticleDto(savedArticle);
+        try {
+            Article savedArticle = articleRepository.save(request.toEntity());
+            List<ArticleTag> articleTags = request.toArticleTagsEntity(savedArticle);
+            List<ArticleTag> savedArticleTags =  articleTagRepository.saveAll(articleTags);
+            savedArticle.setArticleTags(savedArticleTags);
+            savedArticle.setUser(author);
+            return new ArticleDto(savedArticle);
+        } catch (Exception e) {
+            throw new DefaultErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "article save error: " + e.getMessage());
+        }
     }
 
     @Transactional
