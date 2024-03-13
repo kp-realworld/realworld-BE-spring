@@ -6,6 +6,7 @@ import com.hotkimho.realworldapi.domain.User;
 import com.hotkimho.realworldapi.dto.comment.AddCommentRequest;
 import com.hotkimho.realworldapi.dto.comment.CommentDto;
 import com.hotkimho.realworldapi.dto.comment.CommentListDto;
+import com.hotkimho.realworldapi.dto.comment.CommentResponse;
 import com.hotkimho.realworldapi.exception.DefaultErrorException;
 import com.hotkimho.realworldapi.repository.ArticleRepository;
 import com.hotkimho.realworldapi.repository.CommentRepository;
@@ -30,14 +31,14 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDto save(AddCommentRequest request, Long articleId, Long currentUserId) {
+    public CommentResponse save(AddCommentRequest request, Long articleId, Long currentUserId) {
 
         User author = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found user id: " + currentUserId));
 
         Article article = new Article(articleId);
         try {
-            return new CommentDto(commentRepository.save(request.toEntity(article, author)));
+            return new CommentResponse(commentRepository.save(request.toEntity(article, author)));
         } catch (Exception e) {
             throw new DefaultErrorException(HttpStatus.BAD_REQUEST, "comment save error: " + e.getMessage());
         }
@@ -55,7 +56,7 @@ public class CommentService {
 
     // update comment
     @Transactional
-    public CommentDto updateComment(
+    public CommentResponse updateComment(
             Long commentId,
             Long currentUserId,
             String body,
@@ -82,7 +83,7 @@ public class CommentService {
         comment.update(body);
         comment.setUser(user);
 
-        return new CommentDto(comment);
+        return new CommentResponse(comment);
     }
 
     // delete comment

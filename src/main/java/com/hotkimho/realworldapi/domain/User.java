@@ -1,11 +1,7 @@
 package com.hotkimho.realworldapi.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.antlr.v4.runtime.misc.NotNull;
+import lombok.*;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,6 +15,7 @@ import java.util.List;
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Setter
 @Entity
 public class User implements UserDetails {
 
@@ -71,6 +68,17 @@ public class User implements UserDetails {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void updateProfile(String username, String email, String bio, String profileImage, String password) {
+        this.username = username;
+        this.email = email;
+        this.bio = bio;
+        this.profileImage = profileImage;
+        this.password = password;
+    }
+
+    public String getProfileUsername() {
+        return username;
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("user"));

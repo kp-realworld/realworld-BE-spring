@@ -2,10 +2,7 @@ package com.hotkimho.realworldapi.service;
 
 
 import com.hotkimho.realworldapi.domain.*;
-import com.hotkimho.realworldapi.dto.article.AddArticleRequest;
-import com.hotkimho.realworldapi.dto.article.ArticleDto;
-import com.hotkimho.realworldapi.dto.article.ArticleListDto;
-import com.hotkimho.realworldapi.dto.article.UpdateArticleRequest;
+import com.hotkimho.realworldapi.dto.article.*;
 import com.hotkimho.realworldapi.exception.DefaultErrorException;
 import com.hotkimho.realworldapi.repository.*;
 import jakarta.transaction.Transactional;
@@ -48,7 +45,7 @@ public class ArticleService {
     }
 
     @Transactional
-    public ArticleDto save(AddArticleRequest request) {
+    public ArticleResponse save(AddArticleRequest request) {
 
         // read user
         User author = userRepository.findById(request.getAuthor().getUserId())
@@ -63,14 +60,14 @@ public class ArticleService {
             List<ArticleTag> savedArticleTags =  articleTagRepository.saveAll(articleTags);
             savedArticle.setArticleTags(savedArticleTags);
             savedArticle.setUser(author);
-            return new ArticleDto(savedArticle);
+            return new ArticleResponse(savedArticle);
         } catch (Exception e) {
             throw new DefaultErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "article save error: " + e.getMessage());
         }
     }
 
     @Transactional
-    public ArticleDto findByUserIdAndId(Long authorId, Long articleId) {
+    public ArticleResponse findByUserIdAndId(Long authorId, Long articleId) {
         // article 소유 확인
         if (!articleRepository.existsByIdAndUserUserId(articleId, authorId)) {
             throw new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + articleId);
@@ -81,11 +78,11 @@ public class ArticleService {
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + articleId));
 
         // set data
-        return new ArticleDto(article);
+        return new ArticleResponse(article);
     }
 
     @Transactional
-    public ArticleDto update(
+    public ArticleResponse update(
             Long author_id,
             Long article_id,
             UpdateArticleRequest request)
@@ -119,7 +116,7 @@ public class ArticleService {
         article.setArticleTags(savedArticleTags);
         article.setUser(user);
 
-        return new ArticleDto(article);
+        return new ArticleResponse(article);
     }
 
     public void delete(Long author_id, Long article_id) {

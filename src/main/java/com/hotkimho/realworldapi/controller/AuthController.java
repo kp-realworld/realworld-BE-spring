@@ -7,6 +7,7 @@ import com.hotkimho.realworldapi.dto.user.VerifyEmail;
 import com.hotkimho.realworldapi.service.TokenService;
 import com.hotkimho.realworldapi.service.UserService;
 import com.hotkimho.realworldapi.util.AuthUtil;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -78,6 +79,11 @@ public class AuthController {
             ));
     }
     @GetMapping("/token-refresh")
+    @Operation(summary = "토큰 갱신", description = "토큰을 갱신합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "토큰 갱신 성공", content = @Content(schema = @Schema(implementation = CreateAccessTokenResponse.class))),
+            @ApiResponse(responseCode = "400", description = "입력값이 유효하지 않음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+    })
     public ResponseEntity<CreateAccessTokenResponse> refreshAccessToken(
             @RequestHeader("Authorization") String refreshToken
     ) {
@@ -88,11 +94,11 @@ public class AuthController {
                 .body(new CreateAccessTokenResponse(newAccessToken));
     }
 
-
-
-
     @GetMapping("/heartbeat")
     public String heartbeat() {
+
+
+//        Sentry.captureException(new Exception("heartbeat"));
         Optional<Long> currentUserId = AuthUtil.getCurrentUserId();
         System.out.println("currentUserId : " + currentUserId);
         return "I'm alive!";

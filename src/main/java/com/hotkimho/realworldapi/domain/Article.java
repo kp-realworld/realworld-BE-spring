@@ -1,23 +1,5 @@
 package com.hotkimho.realworldapi.domain;
 
-/*
-CREATE TABLE `articles` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(20) NOT NULL,
-  `title` varchar(128) NOT NULL,
-  `description` varchar(128) NOT NULL,
-  `body` varchar(128) NOT NULL,
-  `favorite_count` int(11) NOT NULL DEFAULT 0,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT NULL,
-  `deleted_at` datetime(3) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_users_liked_articles` (`user_id`),
-  KEY `idx_articles_deleted_at` (`deleted_at`),
-  CONSTRAINT `fk_users_articles` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
-  CONSTRAINT `fk_users_liked_articles` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=88 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
- */
 
 import jakarta.persistence.*;
 
