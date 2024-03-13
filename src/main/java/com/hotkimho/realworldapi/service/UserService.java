@@ -2,8 +2,11 @@ package com.hotkimho.realworldapi.service;
 
 import com.hotkimho.realworldapi.domain.User;
 import com.hotkimho.realworldapi.dto.auth.AddUserRequest;
+import com.hotkimho.realworldapi.dto.user.ProfileResponse;
+import com.hotkimho.realworldapi.dto.user.UpdateProfileRequest;
 import com.hotkimho.realworldapi.exception.DefaultErrorException;
 import com.hotkimho.realworldapi.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -39,17 +42,17 @@ public class UserService {
 
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다. id=" + id));
+                .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND,"해당 사용자가 없습니다. id= " + id));
     }
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다. username=" + username));
+                .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND,"해당 사용자가 없습니다. username=" + username));
     }
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다. email=" + email));
+                .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND,"해당 사용자가 없습니다. email=" + email));
     }
 
     public boolean existsByEmail(String email) {
@@ -58,5 +61,24 @@ public class UserService {
 
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+
+    @Transactional
+    public ProfileResponse updateProfile(UpdateProfileRequest request, Long userId) {
+        User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND,"해당 사용자가 없습니다. id= " + userId));
+
+        user.updateProfile(
+                request.getUsername(),
+                request.getEmail(),
+                request.getBio(),
+                request.getProfileImage(),
+                bCryptPasswordEncoder.encode(request.getPassword())
+        );
+
+        System.out.println("request username : "+ request.getUsername());
+        System.out.println("username : " +user.getProfileUsername());
+        return new ProfileResponse(user);
     }
 }

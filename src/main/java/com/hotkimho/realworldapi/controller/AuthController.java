@@ -78,6 +78,11 @@ public class AuthController {
             ));
     }
     @GetMapping("/token-refresh")
+    @Operation(summary = "토큰 갱신", description = "토큰을 갱신합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "토큰 갱신 성공", content = @Content(schema = @Schema(implementation = CreateAccessTokenResponse.class))),
+            @ApiResponse(responseCode = "400", description = "입력값이 유효하지 않음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+    })
     public ResponseEntity<CreateAccessTokenResponse> refreshAccessToken(
             @RequestHeader("Authorization") String refreshToken
     ) {
@@ -87,9 +92,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new CreateAccessTokenResponse(newAccessToken));
     }
-
-
-
 
     @GetMapping("/heartbeat")
     public String heartbeat() {

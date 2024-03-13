@@ -5,6 +5,7 @@ import com.hotkimho.realworldapi.domain.Article;
 import com.hotkimho.realworldapi.domain.ArticleLike;
 import com.hotkimho.realworldapi.domain.ArticleLikeCount;
 import com.hotkimho.realworldapi.dto.article.ArticleDto;
+import com.hotkimho.realworldapi.dto.article.ArticleResponse;
 import com.hotkimho.realworldapi.dto.articlelike.ArticleLikeInfo;
 import com.hotkimho.realworldapi.exception.DefaultErrorException;
 import com.hotkimho.realworldapi.repository.*;
@@ -53,7 +54,7 @@ public class ArticleLikeService {
 
 
     @Transactional
-    public ArticleDto addArticleLike(Long authorId, Long articleId, Long currentUserId) {
+    public ArticleResponse addArticleLike(Long authorId, Long articleId, Long currentUserId) {
         // article 확인
         if (!articleRepository.existsByIdAndUserUserId(articleId, authorId)) {
             throw new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + articleId);
@@ -76,7 +77,7 @@ public class ArticleLikeService {
         Article article =  articleRepository.findByIdWithUser(articleId)
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + articleId));
 
-        return new ArticleDto(article);
+        return new ArticleResponse(article);
     }
 
     @Transactional

@@ -4,12 +4,18 @@ package com.hotkimho.realworldapi.controller;
 import com.hotkimho.realworldapi.domain.*;
 import com.hotkimho.realworldapi.dto.article.*;
 import com.hotkimho.realworldapi.dto.articlelike.ArticleLikeInfo;
+import com.hotkimho.realworldapi.dto.common.ErrorResponse;
 import com.hotkimho.realworldapi.exception.DefaultErrorException;
 import com.hotkimho.realworldapi.service.ArticleLikeService;
 import com.hotkimho.realworldapi.service.ArticleService;
 
 import com.hotkimho.realworldapi.util.AuthUtil;
 import com.hotkimho.realworldapi.util.Convert;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,55 +38,81 @@ public class ArticleController {
     }
 
     @PostMapping("/article")
-    public ResponseEntity<ArticleDto> addArticle(@RequestBody AddArticleRequest request) {
+    @Operation(summary = "게시글 작성", description = "게시글을 작성합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "게시글 작성 성공", content = @Content( schema = @Schema(implementation = ArticleResponse.class))),
+            @ApiResponse(responseCode = "400", description = "입력값이 유효하지 않음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 인증 정보", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "422", description = "게시글 작성 실패", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+    })
+    public ResponseEntity<ArticleResponse> addArticle(@RequestBody AddArticleRequest request) {
         Long currentUserId = AuthUtil.getCurrentUserId()
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.UNAUTHORIZED, "유효하지 않은 인증 정보입니다."));
         System.out.println("tags " + request.getTagList());
 
         request.setAuthor(new User(currentUserId));
-        ArticleDto savedArticle = articleService.save(request);
+        ArticleResponse savedArticle = articleService.save(request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(savedArticle);
     }
 
     @GetMapping("/user/{author_id}/article/{article_id}")
-    public ResponseEntity<ArticleDto> getArticle(
+    @Operation(summary = "게시글 조회", description = "게시글을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "게시글 조회 성공", content = @Content(schema = @Schema(implementation = ArticleResponse.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 인증 정보", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "게시글이 존재하지 않음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+    })
+    public ResponseEntity<ArticleResponse> getArticle(
             @PathVariable("author_id") Long author_id,
             @PathVariable("article_id") Long article_id
     ) {
         Long currentUserId = AuthUtil.getCurrentUserId()
                 .orElse(0L);
 
-        ArticleDto articleDto = articleService.findByUserIdAndId(author_id, article_id);
+        ArticleResponse articleDto = articleService.findByUserIdAndId(author_id, article_id);
 
         ArticleLikeInfo likeInfo = articleLikeService.getArticleLikeInfo(currentUserId, article_id);
-        articleDto.setFavorited(likeInfo.isFavorited());
-        articleDto.setFavoriteCount(likeInfo.getLikeCount());
+        articleDto.getArticle().setFavorited(likeInfo.isFavorited());
+        articleDto.getArticle().setFavoriteCount(likeInfo.getLikeCount());
 
         return ResponseEntity.ok()
                 .body(articleDto);
     }
 
     @PutMapping("/article/{article_id}")
-    public ResponseEntity<ArticleDto> updateArticle(
+    @Operation(summary = "게시글 수정", description = "게시글을 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "게시글 수정 성공", content = @Content(schema = @Schema(implementation = ArticleResponse.class))),
+            @ApiResponse(responseCode = "400", description = "입력값이 유효하지 않음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 인증 정보", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "게시글 또는 작성자가 존재하지 않음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+    })
+    public ResponseEntity<ArticleResponse> updateArticle(
             @PathVariable("article_id") Long article_id,
             @RequestBody UpdateArticleRequest request
     ) {
         Long currentUserId = AuthUtil.getCurrentUserId()
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.UNAUTHORIZED, "유효하지 않은 인증 정보입니다."));
 
-        ArticleDto updatedArticle = articleService.update(currentUserId, article_id, request);
+        ArticleResponse updatedArticle = articleService.update(currentUserId, article_id, request);
 
         ArticleLikeInfo likeInfo = articleLikeService.getArticleLikeInfo(currentUserId, article_id);
-        updatedArticle.setFavorited(likeInfo.isFavorited());
-        updatedArticle.setFavoriteCount(likeInfo.getLikeCount());
+        updatedArticle.getArticle().setFavorited(likeInfo.isFavorited());
+        updatedArticle.getArticle().setFavoriteCount(likeInfo.getLikeCount());
 
         return ResponseEntity.ok()
                 .body(updatedArticle);
     }
 
     @DeleteMapping("/article/{article_id}")
+    @Operation(summary = "게시글 삭제", description = "게시글을 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "게시글 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 인증 정보", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "게시글 또는 작성자가 존재하지 않음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+    })
     public ResponseEntity<Void> deleteArticle(
             @PathVariable("article_id") Long article_id
     ) {
@@ -94,6 +126,10 @@ public class ArticleController {
 
     // article 페이지네이션
     @GetMapping("/articles")
+    @Operation(summary = "게시글 목록 조회", description = "게시글 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "게시글 목록 조회 성공", content = @Content(schema = @Schema(implementation = ArticleListDto.class))),
+    })
     public ResponseEntity<ArticleListDto> getArticles(
             @RequestParam(value = "limit", required = false) Integer limit,
             @RequestParam(value = "offset", required = false) Integer offset
@@ -119,6 +155,10 @@ public class ArticleController {
 
     // article tag 페이지네이션
     @GetMapping("/articles/tag")
+    @Operation(summary = "태그별 게시글 목록 조회", description = "태그별 게시글 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "태그별 게시글 목록 조회 성공", content = @Content(schema = @Schema(implementation = ArticleListDto.class))),
+    })
     public ResponseEntity<ArticleListDto> getArticlesByTag(
             @RequestParam(value = "limit", required = false) Integer limit,
             @RequestParam(value = "offset", required = false) Integer offset,
@@ -148,6 +188,11 @@ public class ArticleController {
     }
 
     @GetMapping("/my/articles")
+    @Operation(summary = "내 게시글 목록 조회", description = "내 게시글 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "내 게시글 목록 조회 성공", content = @Content(schema = @Schema(implementation = ArticleListDto.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 인증 정보", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+    })
     public ResponseEntity<ArticleListDto> getMyArticles(
             @RequestParam(value = "limit", required = false) Integer limit,
             @RequestParam(value = "offset", required = false) Integer offset
@@ -170,6 +215,10 @@ public class ArticleController {
     }
 
     @GetMapping("/user/{author_id}/articles")
+    @Operation(summary = "유저 게시글 목록 조회", description = "유저 게시글 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "유저 게시글 목록 조회 성공", content = @Content(schema = @Schema(implementation = ArticleListDto.class))),
+    })
     public ResponseEntity<ArticleListDto> getArticlesByUserId(
             @PathVariable("author_id") Long author_id,
             @RequestParam(value = "limit", required = false) Integer limit,
