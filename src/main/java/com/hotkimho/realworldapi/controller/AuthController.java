@@ -7,6 +7,7 @@ import com.hotkimho.realworldapi.dto.user.VerifyEmail;
 import com.hotkimho.realworldapi.service.TokenService;
 import com.hotkimho.realworldapi.service.UserService;
 import com.hotkimho.realworldapi.util.AuthUtil;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -95,6 +96,9 @@ public class AuthController {
 
     @GetMapping("/heartbeat")
     public String heartbeat() {
+
+
+//        Sentry.captureException(new Exception("heartbeat"));
         Optional<Long> currentUserId = AuthUtil.getCurrentUserId();
         System.out.println("currentUserId : " + currentUserId);
         return "I'm alive!";

@@ -13,6 +13,5 @@ public class ProfileResponse {
     public ProfileResponse() {}
     public ProfileResponse(User user) {
         this.user = new UserDto(user);
-        this.user.setUsername(user.getProfileUsername());
     }
 }
