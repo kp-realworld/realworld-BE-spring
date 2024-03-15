@@ -40,7 +40,7 @@ public class FollowController {
 
 
         FollowResponse followResponse = followService.followUser(currentUserId, followedId);
-        System.out.println("followResponse " + followResponse.getUser().getUserId());
+
         return ResponseEntity.status(HttpStatus.OK).body(followResponse);
     }
 

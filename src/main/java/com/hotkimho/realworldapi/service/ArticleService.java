@@ -29,6 +29,7 @@ public class ArticleService {
     private final ArticleTagRepository articleTagRepository;
     private final ArticleLikeRepository articleLikeRepository;
     private final ArticleLikeCountRepository articleLikeCountRepository;
+
     @Autowired
     public ArticleService(
             ArticleRepository articleRepository,
@@ -153,4 +154,5 @@ public class ArticleService {
                 .stream()
                 .toList();
     }
+
 }

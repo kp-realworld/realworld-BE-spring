@@ -26,7 +26,7 @@ public class AuthorDto {
     public AuthorDto(User user) {
         this.authorId = user.getUserId();
         this.email = user.getEmail();
-        this.username = user.getUsername();
+        this.username = user.getProfileUsername();
         this.bio = user.getBio();
         this.profileImage = user.getProfileImage();
         this.following = false;

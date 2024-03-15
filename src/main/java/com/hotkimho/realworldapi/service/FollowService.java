@@ -12,6 +12,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class FollowService {
     private final UserRepository userRepository;
@@ -56,5 +58,20 @@ public class FollowService {
         } catch (Exception e) {
             throw new DefaultErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "팔로우 취소에 실패했습니다. : "+ e.getMessage());
         }
+    }
+
+    public boolean isFollowing(Long currentUserId, Long targetUserId) {
+        if (currentUserId == 0 || targetUserId == 0) {
+            return false;
+        }
+
+        return followRepository.existsByFollowerIdAndFolloweeId(currentUserId, targetUserId);
+    }
+
+    public List<Follow> getFollowers(Long currentUserId, List<Long> followeeId) {
+        if (currentUserId == 0 || followeeId.isEmpty()) {
+            return List.of();
+        }
+        return followRepository.findByFollowerIdAndFolloweeIdIn(currentUserId, followeeId);
     }
 }

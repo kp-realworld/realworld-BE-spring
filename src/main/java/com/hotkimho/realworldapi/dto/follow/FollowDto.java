@@ -23,7 +23,7 @@ public class FollowDto {
     public FollowDto(User user) {
         this.userId = user.getUserId();
         this.email = user.getEmail();
-        this.username = user.getUsername();
+        this.username = user.getProfileUsername();
         this.bio = user.getBio();
         this.profileImage = user.getProfileImage();
     }
@@ -31,7 +31,7 @@ public class FollowDto {
     public FollowDto(User user, boolean following) {
         this.userId = user.getUserId();
         this.email = user.getEmail();
-        this.username = user.getUsername();
+        this.username = user.getProfileUsername();
         this.bio = user.getBio();
         this.profileImage = user.getProfileImage();
         this.following = following;

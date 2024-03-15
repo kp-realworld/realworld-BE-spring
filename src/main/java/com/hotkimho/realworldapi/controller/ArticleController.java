@@ -9,6 +9,7 @@ import com.hotkimho.realworldapi.exception.DefaultErrorException;
 import com.hotkimho.realworldapi.service.ArticleLikeService;
 import com.hotkimho.realworldapi.service.ArticleService;
 
+import com.hotkimho.realworldapi.service.FollowService;
 import com.hotkimho.realworldapi.util.AuthUtil;
 import com.hotkimho.realworldapi.util.Convert;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,10 +32,15 @@ public class ArticleController {
 
     private final ArticleService articleService;
     private final ArticleLikeService articleLikeService;
+    private final FollowService followService;
     @Autowired()
-    public ArticleController(ArticleService articleService, ArticleLikeService articleLikeService) {
+    public ArticleController(
+            ArticleService articleService,
+            ArticleLikeService articleLikeService,
+            FollowService followService) {
         this.articleService = articleService;
         this.articleLikeService = articleLikeService;
+        this.followService = followService;
     }
 
     @PostMapping("/article")
@@ -65,18 +71,19 @@ public class ArticleController {
             @ApiResponse(responseCode = "404", description = "게시글이 존재하지 않음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     public ResponseEntity<ArticleResponse> getArticle(
-            @PathVariable("author_id") Long author_id,
-            @PathVariable("article_id") Long article_id
+            @PathVariable("author_id") Long authorId,
+            @PathVariable("article_id") Long articleId
     ) {
         Long currentUserId = AuthUtil.getCurrentUserId()
                 .orElse(0L);
 
-        ArticleResponse articleDto = articleService.findByUserIdAndId(author_id, article_id);
+        ArticleResponse articleDto = articleService.findByUserIdAndId(authorId, articleId);
 
-        ArticleLikeInfo likeInfo = articleLikeService.getArticleLikeInfo(currentUserId, article_id);
+        ArticleLikeInfo likeInfo = articleLikeService.getArticleLikeInfo(currentUserId, articleId);
         articleDto.getArticle().setFavorited(likeInfo.isFavorited());
         articleDto.getArticle().setFavoriteCount(likeInfo.getLikeCount());
 
+        articleDto.getArticle().getAuthor().setFollowing(followService.isFollowing(currentUserId, authorId));
         return ResponseEntity.ok()
                 .body(articleDto);
     }
@@ -90,15 +97,15 @@ public class ArticleController {
             @ApiResponse(responseCode = "404", description = "게시글 또는 작성자가 존재하지 않음", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })
     public ResponseEntity<ArticleResponse> updateArticle(
-            @PathVariable("article_id") Long article_id,
+            @PathVariable("article_id") Long articleId,
             @RequestBody UpdateArticleRequest request
     ) {
         Long currentUserId = AuthUtil.getCurrentUserId()
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.UNAUTHORIZED, "유효하지 않은 인증 정보입니다."));
 
-        ArticleResponse updatedArticle = articleService.update(currentUserId, article_id, request);
+        ArticleResponse updatedArticle = articleService.update(currentUserId, articleId, request);
 
-        ArticleLikeInfo likeInfo = articleLikeService.getArticleLikeInfo(currentUserId, article_id);
+        ArticleLikeInfo likeInfo = articleLikeService.getArticleLikeInfo(currentUserId, articleId);
         updatedArticle.getArticle().setFavorited(likeInfo.isFavorited());
         updatedArticle.getArticle().setFavoriteCount(likeInfo.getLikeCount());
 
@@ -148,7 +155,13 @@ public class ArticleController {
             articleLikes = articleLikeService.findByUserIdAndArticleIdIn(currentUserId, articleIds);
         }
 
-        ArticleListDto articleListDto = Convert.convertToArticleListDtoWithLikeInfo(articleList, articleLikes, articleLikeCounts);
+        List<Long> authorIds = articleList.stream()
+                .map(article -> article.getUser().getUserId())
+                .toList();
+
+        List<Follow> follows = followService.getFollowers(currentUserId, authorIds);
+
+        ArticleListDto articleListDto = Convert.convertToArticleListDtoWithLikeInfo(articleList, articleLikes, articleLikeCounts,follows);
         return ResponseEntity.ok()
                 .body(articleListDto);
     }
@@ -180,7 +193,14 @@ public class ArticleController {
             articleLikes = articleLikeService.findByUserIdAndArticleIdIn(currentUserId, articleIds);
         }
 
-        ArticleListDto articleListDto = Convert.convertToArticleListDtoWithLikeInfo(articleList, articleLikes, articleLikeCounts);
+
+        List<Long> authorIds = articleList.stream()
+                .map(article -> article.getUser().getUserId())
+                .toList();
+        List<Follow> follows = followService.getFollowers(currentUserId, authorIds);
+
+
+        ArticleListDto articleListDto = Convert.convertToArticleListDtoWithLikeInfo(articleList, articleLikes, articleLikeCounts, follows);
         // id 역순
         articleListDto.getArticles().sort((a, b) -> b.getArticleId().compareTo(a.getArticleId()));
         return ResponseEntity.ok()
@@ -209,7 +229,13 @@ public class ArticleController {
 
         List<ArticleLike> articleLikes = articleLikeService.findByUserIdAndArticleIdIn(currentUserId, articleIds);
 
-        ArticleListDto articleListDto = Convert.convertToArticleListDtoWithLikeInfo(articleList, articleLikes, articleLikeCounts);
+        List<Long> authorIds = articleList.stream()
+                .map(article -> article.getUser().getUserId())
+                .toList();
+        List<Follow> follows = followService.getFollowers(currentUserId, authorIds);
+
+
+        ArticleListDto articleListDto = Convert.convertToArticleListDtoWithLikeInfo(articleList, articleLikes, articleLikeCounts,follows);
         return ResponseEntity.ok()
                 .body(articleListDto);
     }
@@ -239,7 +265,12 @@ public class ArticleController {
             articleLikes = articleLikeService.findByUserIdAndArticleIdIn(currentUserId, articleIds);
         }
 
-        ArticleListDto articleListDto = Convert.convertToArticleListDtoWithLikeInfo(articleList, articleLikes, articleLikeCounts);
+        List<Long> authorIds = articleList.stream()
+                .map(article -> article.getUser().getUserId())
+                .toList();
+        List<Follow> follows = followService.getFollowers(currentUserId, authorIds);
+
+        ArticleListDto articleListDto = Convert.convertToArticleListDtoWithLikeInfo(articleList, articleLikes, articleLikeCounts, follows);
         return ResponseEntity.ok()
                 .body(articleListDto);
     }

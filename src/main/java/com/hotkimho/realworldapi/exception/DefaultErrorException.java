@@ -14,8 +14,6 @@ public class DefaultErrorException extends RuntimeException{
     public DefaultErrorException(HttpStatus code, String message) {
         super(message);
 
-        System.out.println("code : "+code.value());
-        System.out.println("message : "+ message);
         this.message = message;
         this.code = code;
     }

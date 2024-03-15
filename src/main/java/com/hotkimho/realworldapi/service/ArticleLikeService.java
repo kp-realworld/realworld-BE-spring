@@ -27,7 +27,6 @@ public class ArticleLikeService {
     private final ArticleLikeCountRepository articleLikeCountRepository;
     private final RedisTemplate<String, Integer> redisTemplate;
 
-
     @Autowired
     public ArticleLikeService(
             ArticleRepository articleRepository,
@@ -47,15 +46,25 @@ public class ArticleLikeService {
 
     // userid, articleid를 받아서 좋아요, 좋아요 수 조회
     public ArticleLikeInfo getArticleLikeInfo(Long userId, Long articleId) {
+        boolean isFavorited = false;
+        if (userId != null) {
+            isFavorited = articleLikeRepository.existsByUserIdAndArticleId(userId, articleId);
+        }
 
-        // read article like
-        boolean isFavorited = articleLikeRepository.existsByUserIdAndArticleId(userId, articleId);
-
-        // read article like count
-        ArticleLikeCount articleLikeCount = articleLikeCountRepository.findById(articleId)
-                .orElse(new ArticleLikeCount(articleId, 0));
-
-        return new ArticleLikeInfo(articleLikeCount.getCount(), isFavorited);
+        String articleLikeCountKey = "article:" + articleId;
+        try {
+            // 캐시에 있는 좋아요 수 데이터 조회
+            Integer currentLikeCount = redisTemplate.opsForValue().get(articleLikeCountKey);
+            if (currentLikeCount == null) {
+                Integer articleLikeCount = articleLikeCountRepository.findById(articleId)
+                        .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article like count id: " + articleId)).getCount();
+                redisTemplate.opsForValue().set(articleLikeCountKey, articleLikeCount);
+                currentLikeCount = articleLikeCount;
+            }
+            return new ArticleLikeInfo(currentLikeCount, isFavorited);
+        } catch (Exception e) {
+            throw new DefaultErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "redis error: " + e.getMessage());
+        }
     }
 
 
@@ -71,27 +80,35 @@ public class ArticleLikeService {
             articleLikeRepository.save(new ArticleLike(currentUserId, articleId));
         }
 
+        Integer articleLikeCount = 0;
         String articleLikeCountKey = "article:" + articleId;
         try {
-            ArticleLikeCount articleLikeCount =
-            // 좋아요 수 데이터가 있는 경우
-            if (Boolean.TRUE.equals(redisTemplate.hasKey(articleLikeCountKey))) {
+            // 캐시에 있는 좋아요 수 데이터 조회
+            Integer currentLikeCount = redisTemplate.opsForValue().get(articleLikeCountKey);
+            // rdb에 좋아요 수 증가
+            articleLikeCountRepository.incrementCountByArticleId(articleId);
 
-            } else { // 없는 경우
-                // db에서 읽어와서 redis에 저장
+            System.out.println("currentLikeCount: " + currentLikeCount);
+            if (currentLikeCount != null) {
+                // 좋아요 수 데이터가 있는 경우
+                // 좋아요 수 데이터 증가
+                System.out.println("cache hit");
+                redisTemplate.opsForValue().increment(articleLikeCountKey);
+                articleLikeCount = currentLikeCount + 1;
+            } else {
 
-
+                articleLikeCount = articleLikeCountRepository.findById(articleId)
+                        .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article like count id: " + articleId)).getCount();
+                System.out.println("set cache :" +  articleLikeCount);
+                redisTemplate.opsForValue().set(articleLikeCountKey, articleLikeCount);
             }
+
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new DefaultErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "redis error: " + e.getMessage());
         }
 
-        // 없는 경우 db에서 읽어와서 redis에 저장
-        articleLikeCountRepository.incrementCountByArticleId(articleId);
-        // read article
-        Article article =  articleRepository.findByIdWithUser(articleId)
+        Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + articleId));
-
         return new ArticleResponse(article);
     }
 
@@ -102,9 +119,18 @@ public class ArticleLikeService {
             throw new DefaultErrorException(HttpStatus.NOT_FOUND, "not found article id: " + articleId);
         }
 
-        // 좋아요 한 경우, 좋아요 삭제
-        if (articleLikeRepository.existsByUserIdAndArticleId(currentUserId, articleId)) {
-            articleLikeRepository.deleteByUserIdAndArticleId(currentUserId, articleId);
+        // 좋아요 삭제
+        articleLikeRepository.deleteByUserIdAndArticleId(currentUserId, articleId);
+
+        String articleLikeCountKey = "article:" + articleId;
+        try {
+            // 캐시에 있는 좋아요 수 데이터 조회
+            Integer currentLikeCount = redisTemplate.opsForValue().get(articleLikeCountKey);
+            if (currentLikeCount != null) {
+                redisTemplate.opsForValue().decrement(articleLikeCountKey);
+            }
+        } catch (Exception e) {
+            throw new DefaultErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "redis error: " + e.getMessage());
         }
 
         articleLikeCountRepository.decrementCountByArticleId(articleId);

@@ -74,7 +74,7 @@ public class AuthController {
                         tokenService.createNewAccessToken(user),
                         tokenService.createRefreshToken(user),
                         user.getUserId(),
-                        user.getUsername(),
+                        user.getProfileUsername(),
                         user.getEmail()
             ));
     }
