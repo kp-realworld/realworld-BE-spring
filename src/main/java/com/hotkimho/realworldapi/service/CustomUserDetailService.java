@@ -24,7 +24,7 @@ public class CustomUserDetailService implements UserDetailsService {
 
         // 왜 줏석?
         return User.builder()
-                .username(user.getUsername())
+//                .username(user.getUsername())
                 .email(user.getEmail())
                 .password(user.getPassword())
                 .build();
