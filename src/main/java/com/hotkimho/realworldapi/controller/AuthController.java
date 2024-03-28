@@ -96,11 +96,6 @@ public class AuthController {
 
     @GetMapping("/heartbeat")
     public String heartbeat() {
-
-
-//        Sentry.captureException(new Exception("heartbeat"));
-        Optional<Long> currentUserId = AuthUtil.getCurrentUserId();
-        System.out.println("currentUserId : " + currentUserId);
-        return "I'm alive!";
+        return "I'm alive!1";
     }
 }

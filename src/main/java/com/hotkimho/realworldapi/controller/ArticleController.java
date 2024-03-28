@@ -139,7 +139,7 @@ public class ArticleController {
     })
     public ResponseEntity<ArticleListDto> getArticles(
             @RequestParam(value = "limit", required = false) Integer limit,
-            @RequestParam(value = "offset", required = false) Integer offset
+            @RequestParam(value = "page", required = false) Integer offset
     ) {
         Long currentUserId = AuthUtil.getCurrentUserId()
                 .orElse(0L);
@@ -174,7 +174,7 @@ public class ArticleController {
     })
     public ResponseEntity<ArticleListDto> getArticlesByTag(
             @RequestParam(value = "limit", required = false) Integer limit,
-            @RequestParam(value = "offset", required = false) Integer offset,
+            @RequestParam(value = "page", required = false) Integer offset,
             @RequestParam(value = "tag") String tag
     ) {
         Long currentUserId = AuthUtil.getCurrentUserId()
@@ -215,7 +215,7 @@ public class ArticleController {
     })
     public ResponseEntity<ArticleListDto> getMyArticles(
             @RequestParam(value = "limit", required = false) Integer limit,
-            @RequestParam(value = "offset", required = false) Integer offset
+            @RequestParam(value = "page", required = false) Integer offset
     ) {
         Long currentUserId = AuthUtil.getCurrentUserId()
                 .orElseThrow(() -> new DefaultErrorException(HttpStatus.UNAUTHORIZED, "유효하지 않은 인증 정보입니다."));
@@ -248,7 +248,7 @@ public class ArticleController {
     public ResponseEntity<ArticleListDto> getArticlesByUserId(
             @PathVariable("author_id") Long author_id,
             @RequestParam(value = "limit", required = false) Integer limit,
-            @RequestParam(value = "offset", required = false) Integer offset
+            @RequestParam(value = "page", required = false) Integer offset
     ) {
         Long currentUserId = AuthUtil.getCurrentUserId()
                 .orElse(0L);
