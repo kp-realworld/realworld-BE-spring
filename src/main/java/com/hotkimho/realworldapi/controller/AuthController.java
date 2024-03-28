@@ -96,6 +96,6 @@ public class AuthController {
 
     @GetMapping("/heartbeat")
     public String heartbeat() {
-        return "I'm alive!1";
+        return "I'm alive!2";
     }
 }
